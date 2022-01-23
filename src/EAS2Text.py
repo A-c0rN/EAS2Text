@@ -3,16 +3,86 @@ import datetime
 from datetime import datetime as DT
 import time
 
+class EAS2Text(object):
 
-
-class Utilities:
-
-    def __init__(self) -> None:
+    def __init__(self, RawEASData:str) -> None:
         with open('EASData.json', 'r') as f:
-	        _stats = json.load(f)
+            stats = json.load(f)
+        self.FIPS = []
+        self.FIPSText = []
+        strFIPS = ''
+        self.EASData = RawEASData
+        if RawEASData.startswith('NNNN'):
+            return "End Of Message"
+        eas = ''.join(RawEASData.split('ZCZC')[1].replace('+', '-')).split('-')
+        for i in eas:
+            if i.strip(" ") == "":
+                eas.remove(i)
+            if len(i) == 6 and self.__isInt__(i) and i not in self.FIPS:
+                self.FIPS.append(str(i))
+        for i in self.FIPS:
+            try:
+                if i == self.FIPS[-1] and len(self.FIPS) > 1:
+                    strFIPS += f"and {stats['SUBDIV'][i[0]]}{stats['SAME'][i[1:]]}; "
+                    self.FIPSText.append(f"{stats['SUBDIV'][i[0]]} {stats['SAME'][i[1:]]}")
+                else:
+                    strFIPS += f"{stats['SUBDIV'][i[0]]} {stats['SAME'][i[1:]]}; "
+                    self.FIPSText.append(f"{stats['SUBDIV'][i[0]]} {stats['SAME'][i[1:]]}")
+            except:
+                if i == self.FIPS[-1] and len(self.FIPS) > 1:
+                    strFIPS += f"and FIPS Code {i}; "
+                    self.FIPSText.append(f"FIPS Code {i}")
+                else:
+                    strFIPS += f"FIPS Code {i}; "
+                    self.FIPSText.append(f"FIPS Code {i}")
+        self.purge = [(eas[-3][i:i+2]) for i in range(0, len(eas[-3]), 2)]
+        self.timeStamp = eas[-2]
+        dtOffset = time.mktime(DT.utcnow().timetuple())-time.mktime(DT.now().timetuple())
+        alertStartTime = DT.strptime(self.timeStamp, '%j%H%M')
+        alertStartEpoch = time.mktime(DT(DT.utcnow().year, alertStartTime.month, alertStartTime.day, alertStartTime.hour, alertStartTime.minute).timetuple())+dtOffset
+        alertEndEpochOffset = (int(self.purge[1])*60)+((int(self.purge[0])*60)*60)
+        alertLocalTime = time.localtime(alertStartEpoch)
+        if alertLocalTime.tm_hour >= 12:
+            validhour2 = alertLocalTime.tm_hour-12
+            ampm = ' PM'
+        else:
+            validhour2 = alertLocalTime.tm_hour
+            ampm = ' AM'
+        validminute = alertLocalTime.tm_min
+        if validhour2 == 0:
+            validhour2 = 12
+        self.startTimeText = f"{str(validhour2)}:{str(validminute).rjust(2,'0')}{ampm} {datetime.date(1900, alertLocalTime.tm_mon, 1).strftime('%B')} {str(alertLocalTime.tm_mday)}, {alertLocalTime.tm_year}"
+        alertLocalTime = time.localtime(alertStartEpoch+alertEndEpochOffset)
+        if alertLocalTime.tm_hour >= 12:
+            validhour2 = alertLocalTime.tm_hour-12
+            if validhour2 == 0:
+                validhour2 = 12
+            ampm = ' PM'
+            validminute = alertLocalTime.tm_min
+        else:
+            validhour2 = alertLocalTime.tm_hour
+            if validhour2 == 0:
+                validhour2 = 12
+            ampm = ' AM'
+            validminute = alertLocalTime.tm_min
+        self.endTimeText = f"{str(validhour2)}:{str(validminute).rjust(2,'0')}{ampm} {datetime.date(1900, alertLocalTime.tm_mon, 1).strftime('%B')} {str(alertLocalTime.tm_mday)}, {alertLocalTime.tm_year}"
+        self.org = str(eas[0])
+        self.evnt = str(eas[1])
+        try:
+            self.orgText = stats["ORGS"][self.org]
+        except:
+            self.orgText = "An Unknown Originator ("+self.org+") has issued "
+        try:
+            self.evntText = stats["EVENTS"][self.evnt]
+        except:
+            self.evntText = "an Unknown Event ("+self.evnt+")"
+
+        self.callsign = eas[-1].strip()
+
+        self.EASText =  f"{self.orgText} has issued {self.evntText} for {strFIPS}beginning at {self.startTimeText} and ending at {self.endTimeText}. Message from {self.callsign}."
 
     @classmethod
-    def _isInt(cls, number):
+    def __isInt__(cls, number):
         try:
             int(number)
         except ValueError:
@@ -20,79 +90,3 @@ class Utilities:
         else:
             return True
 
-    @classmethod
-    def toText(cls, eas):
-        FIPS = []
-        _strFIPS = ''
-        if eas.startswith('NNNN'):
-            return "End Of Message"
-        _eas = ''.join(eas.split('ZCZC')[1].replace('+', '-')).split('-')
-        for _i in _eas:
-            if _i.strip(" ") == "":
-                _eas.remove(_i)
-            if len(_i) == 6 and cls._isInt(_i) and _i not in FIPS:
-                FIPS.append(str(_i))
-        for _i in FIPS:
-            try:
-                if _i == FIPS[-1] and len(FIPS) > 1:
-                    _strFIPS += f"and {_stats['SUBDIV'][i[0]]+_stats['SAME'][_i[1:]]}; "
-                else:
-                    _strFIPS += f"{_stats['SUBDIV'][_i[0]]+_stats['SAME'][_i[1:]]}; "
-            except:
-                if _i == FIPS[-1] and len(FIPS) > 1:
-                    _strFIPS += f"and FIPS Code {_stats['SUBDIV'][_i[0]]+_i}; "
-                else:
-                    _strFIPS += f"FIPS Code {_stats['SUBDIV'][_i[0]]+_i}; "
-        purge = [(_eas[-3][_i:_i+2]) for _i in range(0, len(_eas[-3]), 2)]
-        timeStamp = _eas[-2]
-        _dtOffset = time.mktime(DT.utcnow().timetuple())-time.mktime(DT.now().timetuple())
-        _x = DT.strptime(timeStamp, '%j%H%M')
-        _test = time.mktime(DT(DT.utcnow().year, _x.month, _x.day, _x.hour, _x.minute).timetuple())+_dtOffset
-        _test2 = time.localtime(_test)
-        if _test2.tm_hour >= 12:
-            _validhour2 = _test2.tm_hour-12
-            _ampm = ' PM'
-        else:
-            _validhour2 = _test2.tm_hour
-            _ampm = ' AM'
-        _validminute = _test2.tm_min
-        if _validhour2 == 0:
-            _validhour2 = 12
-        BEGINNING = f"{str(_validhour2)}:{str(_validminute).rjust(2,'0')}{_ampm} {datetime.date(1900, _test2.tm_mon, 1).strftime('%B')} {str(_test2.tm_mday)}, {_test2.tm_year}"
-        endtime = (int(purge[1])*60)+((int(purge[0])*60)*60)
-        test2 = time.localtime(test+endtime)
-        if test2.tm_hour >= 12:
-            validhour2 = test2.tm_hour-12
-            if validhour2 == 0:
-                validhour2 = 12
-            ampm = ' PM'
-            validminute = test2.tm_min
-        else:
-            validhour2 = test2.tm_hour
-            if validhour2 == 0:
-                validhour2 = 12
-            ampm = ' AM'
-            validminute = test2.tm_min
-        ENDING = f"{str(validhour2)}:{str(validminute).rjust(2,'0')}{ampm} {datetime.date(1900, test2.tm_mon, 1).strftime('%B')} {str(test2.tm_mday)}, {test2.tm_year}"
-        try:
-            org = stats["ORGS"][eas[0]]
-        except:
-            org = "An Unknown Originator ("+str(eas[0])+") has issued "
-        try:
-            evn = stats["EVENTS"][eas[1]]
-        except:
-            evn = "an Unknown Event ("+str(eas[1])+")"
-
-        eas[0]
-        eas[1]
-        org
-        evn
-        FIPS
-        strFIPS
-        Purge
-        timeStamp
-        BEGINNING
-        ENDING
-
-
-        return f"{org}{evn} for {strFIPS}beginning at {BEGINNING} and ending at {ENDING}. Message from {eas[-1].strip()}."
