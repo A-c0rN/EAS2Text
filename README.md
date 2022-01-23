@@ -8,6 +8,7 @@ An Extensive EAS Header to Text Translation Python Library
 > - [x] EAS to Text Translation
 > - [x] EAS EOM detection
 > - [x] Handles Unknown Callsigns, Originators, and FIPS codes
+> - [x] Additional raw outputs and individual item outputs
 > - [x] Fast as all hell, as per usual :3
 
 ## Installation
