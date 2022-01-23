@@ -1,4 +1,4 @@
-![EAS2Text](https://github.com/A-c0rN/EASGen/blob/main/doc/img/EASGen.png)
+![EAS2Text](https://github.com/A-c0rN/EAS2Text/blob/master/doc/img/EAS2Text.png)
 
 ![PyPI](https://img.shields.io/pypi/v/EASGen?label=Version&style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/A-c0rN/EASGen/CodeQL?style=flat-square) ![PyPI - Downloads](https://img.shields.io/pypi/dm/EASGen?style=flat-square) ![GitHub language count](https://img.shields.io/github/languages/count/A-c0rN/EASGen?style=flat-square) ![GitHub](https://img.shields.io/github/license/A-c0rN/EASGen?style=flat-square)
 
