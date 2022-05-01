@@ -1,4 +1,7 @@
-from os import path, pardir, chdir
+# Standard Library
+from os import chdir, pardir, path
+
+# Third-Party
 from setuptools import setup
 
 with open(path.join(path.dirname(__file__), "README.md")) as readme:
@@ -10,7 +13,7 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 setup(
     name="EAS2Text",
     packages=["EAS2Text"],
-    version="0.1.8",
+    version="0.1.9",
     description="A Python library to convert raw EAS header data to a human readable text",
     author="A-c0rN",
     author_email="acrn@gwes-eas.network",
