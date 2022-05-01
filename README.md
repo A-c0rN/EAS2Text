@@ -60,13 +60,17 @@ print(f"RAW FIPS: {oof.FIPS}")  ## Raw FIPS Code(s) in a list: ZCZC-ORG-EVN-{PSS
 print(f"Purge Time: {oof.purge}") ## Purge Time in a list format of HH, MM: ZCZC-ORG-EVN-PSSCCC-PSSCCC+{TTTT}-JJJHHMM-CCCCCCCC-
 print(f"RAW TIMESTAMP: {oof.timeStamp}") ## RAW Timestamp: ZCZC-ORG-EVN-PSSCCC-PSSCCC+TTTT-{JJJHHMM}-CCCCCCCC-
 
+## Semi-RAW Data
+print(f"Start Time: {oof.startTime}") ## A Datetime.Datetime object of the Start Time (Local Timezone)
+print(f"End Time: {oof.endTime}") ## A Datetime.Datetime object of the End Time (Local Timezone)
+
 ## Parsed Data Output
 print(f"TEXT ORG: {oof.orgText}") ## A Human-Readable Version of ORG
 print(f"TEXT EVNT: {oof.evntText}") ## A Human Readable Version of EVN
 print(f"TEXT FIPS: {oof.FIPSText}") ## A List of All FIPS County Names (Returns "FIPS Code PSSCCC" if no available county)
-print(f"TEXT Start Time: {oof.startTimeText}") A Start-Time Tag in the format of "HH:MM AM/PM MONTH_NAME DD, YYYY"
-print(f"TEXT End Time: {oof.endTimeText}")
-print(f"{oof.EASText}")
+print(f"TEXT Start Time: {oof.startTimeText}") ##A Start-Time Tag in the format of "HH:MM AM/PM MONTH_NAME DD, YYYY"
+print(f"TEXT End Time: {oof.endTimeText}") ##A End-Time Tag in the format of "HH:MM AM/PM MONTH_NAME DD, YYYY"
+print(f"{oof.EASText}") ## The full EAS Output data
 ```
 should output:
 ```
@@ -76,10 +80,49 @@ RAW EVNT: SPS
 RAW FIPS: ['024043', '024021', '024013', '024005', '024001', '024025', '051840', '051069', '054027', '054065', '054003', '054037', '054057']
 Purge Time: ['06', '00']
 RAW TIMESTAMP: 0231829
+Start Time: 2022-01-23 13:29:00.000178
+End Time: 2022-01-23 19:29:00.000178
 TEXT ORG: The National Weather Service
 TEXT EVNT: a Special Weather Statement
-TEXT FIPS: [' Washington, MD', ' Frederick, MD', ' Carroll, MD', ' Baltimore, MD', ' Allegany, MD', ' Harford, MD', ' Winchester, VA', ' Frederick, VA', ' Hampshire, WV', ' Morgan, WV', ' Berkeley, WV', ' Jefferson, WV', ' Mineral, WV']
-TEXT Start Time: 12:29 AM January 24, 2022
-TEXT End Time: 6:29 AM January 24, 2022
-The National Weather Service has issued a Special Weather Statement for  Washington, MD;  Frederick, MD;  Carroll, MD;  Baltimore, MD;  Allegany, MD;  Harford, MD;  Winchester, VA;  Frederick, VA;  Hampshire, WV;  Morgan, WV;  Berkeley, WV;  Jefferson, WV; and  Mineral, WV; beginning at 12:29 AM January 24, 2022 and ending at 6:29 AM January 24, 2022. Message from WACN.
+TEXT FIPS: ['Washington, MD', 'Frederick, MD', 'Carroll, MD', 'Baltimore county, MD', 'Allegany, MD', 'Harford, MD', 'Winchester city, VA', 'Frederick, VA', 'Hampshire, WV', 'Morgan, WV', 'Berkeley, WV', 'Jefferson, WV', 'Mineral, WV']
+TEXT Start Time: 01:29 PM
+TEXT End Time: 07:29 PM
+The National Weather Service has issued a Special Weather Statement for Washington, MD; Frederick, MD; Carroll, MD; Baltimore county, MD; Allegany, MD; Harford, MD; Winchester city, VA; Frederick, VA; Hampshire, WV; Morgan, WV; Berkeley, WV; Jefferson, WV; and Mineral, WV; beginning at 01:29 PM and ending at 07:29 PM. Message from WACN.
+```
+
+## NEW FEATURE: Encoder Emulation!
+EAS2Text is the first Header to Text adapter that can "Emulate ENDECs"
+
+Currently Supported:
+ - DASDEC
+ - BURK
+ - SAGE EAS
+ - SAGE DIGITAL
+ - TRILITHIC
+ - TFT
+
+Not Supported:
+ - EAS-1
+ - HollyAnne Units
+
+To use an emulation system:
+```python
+from EAS2Text.EAS2Text import EAS2Text
+
+oof = EAS2Text(sameData = "ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -", mode="SAGE EAS") ## Emulates a SAGE EAS ENDEC
+
+print(f"{oof.EASText}") ## The full EAS Output data, 1822 style
+```
+
+## NEW FEATURE: Timezone Specification!
+You can now specify a timezone offset to use! 
+Note: This *CAN* and *WILL* break if you use obscure timezones. Keep it to Mainland U.S. for best reliability.
+
+To use an specific timezone:
+```python
+from EAS2Text.EAS2Text import EAS2Text
+
+oof = EAS2Text(sameData = "ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -", timeZone=-6) ## Uses a UTC-6 Offset
+
+print(f"{oof.EASText}") ## The full EAS Output data, with a UTC-6 Offset.
 ```
