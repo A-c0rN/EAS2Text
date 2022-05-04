@@ -10,7 +10,6 @@ An Extensive EAS Header to Text Translation Python Library
 > - [x] Handles Unknown Callsigns, Originators, and FIPS codes
 > - [x] Additional raw outputs and individual item outputs
 > - [x] Fast as all hell, as per usual :3
-> - [x] Both US and Canada integration
 
 ## Installation
 This package should be installable through Pip.
