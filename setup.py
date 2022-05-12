@@ -13,7 +13,7 @@ chdir(path.normpath(path.join(path.abspath(__file__), pardir)))
 setup(
     name="EAS2Text",
     packages=["EAS2Text"],
-    version="0.1.10",
+    version="0.1.11",
     description="A Python library to convert raw EAS header data to a human readable text",
     author="A-c0rN",
     author_email="acrn@gwes-eas.network",
@@ -32,6 +32,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries",
