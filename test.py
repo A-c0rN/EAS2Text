@@ -1,8 +1,8 @@
 # Standard Library
 import unittest
 
-# Local Folder
-from EAS2Text.EAS2Text import EAS2Text
+# First-Party
+from EAS2Text import EAS2Text
 
 
 class TestEAS2Text(unittest.TestCase):
@@ -64,5 +64,5 @@ class TestEAS2Text(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

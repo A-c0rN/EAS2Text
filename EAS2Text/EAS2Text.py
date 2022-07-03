@@ -48,47 +48,38 @@ class EAS2Text(object):
         elif not sameData.startswith("ZCZC"):
             raise InvalidSAME(sameData, message='"ZCZC" Start string missing')
         else:
-
             eas = "".join(
                 sameData.replace("ZCZC-", "").replace("+", "-")
             ).split("-")
+            eas.remove("")
 
-            ## FIPS CODE
-            for i in eas:
-                if i.strip(" ") == "":
-                    eas.remove(i)
-                if len(i) == 6 and self.__isInt__(i) and i not in self.FIPS:
-                    self.FIPS.append(str(i))
-            for i in self.FIPS:
+            for i in eas[2:-3]:
                 try:
-                    if i == self.FIPS[-1] and len(self.FIPS) > 1:
-                        subdiv = stats["SUBDIV"][i[0]]
-                        same = stats["SAME"][i[1:]]
-                        self.strFIPS += f"and {subdiv + ' ' if subdiv != '' else ''}{same}; "
-                        self.FIPSText.append(
-                            f"{subdiv + ' ' if subdiv != '' else ''}{same}"
-                        )
-                    else:
-                        subdiv = stats["SUBDIV"][i[0]]
-                        same = stats["SAME"][i[1:]]
-                        self.strFIPS += (
-                            f"{subdiv + ' ' if subdiv != '' else ''}{same}; "
-                        )
-                        self.FIPSText.append(
-                            f"{subdiv + ' ' if subdiv != '' else ''}{same}"
-                        )
+                    assert len(i) == 6
+                    assert self.__isInt__(i) == True
+                    ## FIPS CODE
+                    if i not in self.FIPS:
+                        self.FIPS.append(str(i))
+                except AssertionError:
+                    raise InvalidSAME("Invalid codes in FIPS data")
+
+            for i in sorted(self.FIPS):
+                try:
+                    subdiv = stats["SUBDIV"][i[0]]
+                    same = stats["SAME"][i[1:]]
+                    self.FIPSText.append(
+                        f"{subdiv + ' ' if subdiv != '' else ''}{same}"
+                    )
                 except KeyError:
-                    if i == self.FIPS[-1] and len(self.FIPS) > 1:
-                        self.strFIPS += f"and FIPS Code {i};"
-                        self.FIPSText.append(f"FIPS Code {i}")
-                    else:
-                        self.strFIPS += f"FIPS Code {i}; "
-                        self.FIPSText.append(f"FIPS Code {i}")
+                    self.FIPSText.append(f"FIPS Code {i}")
                 except Exception as E:
                     raise InvalidSAME(
                         self.FIPS, message=f"Error in FIPS Code ({str(E)})"
                     )
-            self.strFIPS = self.strFIPS.strip()
+            if len(self.FIPSText) > 1:
+                FIPSText = self.FIPSText
+                FIPSText[-1] = f"and {FIPSText[-1]}"
+            self.strFIPS = "; ".join(self.FIPSText).strip() + ";"
 
             ## TIME CODE
             try:
@@ -145,6 +136,14 @@ class EAS2Text(object):
             try:
                 self.org = str(eas[0])
                 self.evnt = str(eas[1])
+                try:
+                    assert len(eas[0]) == 3
+                except AssertionError:
+                    raise InvalidSAME("Originator is an invalid length")
+                try:
+                    assert len(eas[1]) == 3
+                except AssertionError:
+                    raise InvalidSAME("Event Code is an invalid length")
                 try:
                     self.orgText = stats["ORGS"][self.org]
                 except:

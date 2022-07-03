@@ -9,6 +9,7 @@ An Extensive EAS Header to Text Translation Python Library
 > - [x] EAS EOM detection
 > - [x] Handles Unknown Callsigns, Originators, and FIPS codes
 > - [x] Additional raw outputs and individual item outputs
+> - [x] EAS Data Validation
 > - [x] Fast as all hell, as per usual :3
 
 ## Installation
@@ -34,7 +35,7 @@ python -m pip install EAS2Text
 ## Usage
 This package should take a raw ZCZC string, and then return the full text, and/or individual options:
 ```python
-from EAS2Text.EAS2Text import EAS2Text
+from EAS2Text import EAS2Text
 
 data = EAS2Text("ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -")
 print(f"{data.EASText}")
@@ -47,7 +48,7 @@ The National Weather Service has issued a Special Weather Statement for  Washing
 ## Advanced Useage:
 Using the Generator, you can get additional output of info from an alert:
 ```python
-from EAS2Text.EAS2Text import EAS2Text
+from EAS2Text import EAS2Text
 
 oof = EAS2Text("ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -")
 
@@ -106,7 +107,7 @@ Not Supported:
 
 To use an emulation system:
 ```python
-from EAS2Text.EAS2Text import EAS2Text
+from EAS2Text import EAS2Text
 
 oof = EAS2Text(sameData = "ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -", mode="SAGE EAS") ## Emulates a SAGE EAS ENDEC
 
@@ -119,7 +120,7 @@ Note: This *CAN* and *WILL* break if you use obscure timezones. Keep it to Mainl
 
 To use an specific timezone:
 ```python
-from EAS2Text.EAS2Text import EAS2Text
+from EAS2Text import EAS2Text
 
 oof = EAS2Text(sameData = "ZCZC-WXR-SPS-024043-024021-024013-024005-024001-024025-051840-051069-054027-054065-054003-054037-054057+0600-0231829-WACN    -", timeZone=-6) ## Uses a UTC-6 Offset
 
