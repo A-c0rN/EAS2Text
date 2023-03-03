@@ -1,6 +1,6 @@
 ![EAS2Text](https://github.com/A-c0rN/EAS2Text/blob/master/doc/img/EAS2Text.png)
 
-![PyPI](https://img.shields.io/pypi/v/EAS2Text?label=Version&style=flat-square) ![GitHub Workflow Status]https://img.shields.io/github/actions/workflow/status/A-c0rN/EAS2Text/main.yml?style=flat-square) ![PyPI - Downloads](https://img.shields.io/pypi/dm/EAS2Text?style=flat-square) ![GitHub language count](https://img.shields.io/github/languages/count/A-c0rN/EAS2Text?style=flat-square) ![GitHub](https://img.shields.io/github/license/A-c0rN/EAS2Text?style=flat-square)
+![PyPI](https://img.shields.io/pypi/v/EAS2Text?label=Version&style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/A-c0rN/EAS2Text/main.yml?style=flat-square) ![PyPI - Downloads](https://img.shields.io/pypi/dm/EAS2Text?style=flat-square) ![GitHub language count](https://img.shields.io/github/languages/count/A-c0rN/EAS2Text?style=flat-square) ![GitHub](https://img.shields.io/github/license/A-c0rN/EAS2Text?style=flat-square)
 
 An Extensive EAS Header to Text Translation Python Library
 
