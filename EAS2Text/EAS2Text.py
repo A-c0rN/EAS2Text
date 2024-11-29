@@ -3,6 +3,9 @@ from datetime import datetime as DT
 from json import loads
 from time import localtime, timezone
 
+# Local Folder
+from .errors import InvalidSAME, MissingSAME
+
 
 class EAS2Text(object):
 

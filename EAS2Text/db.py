@@ -1,3 +1,7 @@
+# Third-Party
+from errors import InvalidSAME, MissingSAME
+
+
 class db(object):
 
     def __init__(self):
@@ -6884,24 +6888,18 @@ class db(object):
                 self.country = country
             self.alt = alt
 
-    def get_loc_from_same(
-        self, fips: str, expanded_search: bool = False, country: str = "US"
-    ):
+    def get_loc_from_same(self, fips: str):
         loc = {
             "fips": "",
-            "type": "",
-            "country": {"name": "", "abbrev": ""},
+            "type": "None",
+            "country": {"name": "Unknown", "abbrev": "UNK"},
             "region": {
-                "name": "",
-                "abbrev": "",
-                "code": "",
+                "name": "Unknown",
+                "abbrev": "UNK",
+                "code": "Undefined FIPS",
             },
             "subdivision": "",
         }
-        if country != self.country:
-            _country = country
-        else:
-            _country = self.country
         try:
             ## Make sure the code is numeric
             assert fips.isnumeric()
@@ -6916,23 +6914,37 @@ class db(object):
             try:
                 loc["fips"] = _fips
                 loc["subdivision"] = self.subdivisions[_subdiv]
-                if not expanded_search:
-                    loc["country"]["name"] = self.samecodes[_country]["name"]
-                    loc["country"]["abbrev"] = self.samecodes[_country][
-                        "abbrev"
-                    ]
-                    loc["type"] = self.samecodes[_country][_region]["type"]
-                    loc["region"]["name"] = self.samecodes[_country][_region][
-                        "name"
-                    ]
-                    loc["region"]["abbrev"] = self.samecodes[_country][
-                        _region
-                    ]["abbrev"]
-                    loc["region"]["code"] = self.samecodes[_country][_region][
-                        "codes"
-                    ][_code]
-            except:
-                pass
+                for _country in self.countries:
+                    if _region in list(self.samecodes[_country].keys()):
+                        loc["country"]["name"] = self.samecodes[_country][
+                            "name"
+                        ]
+                        loc["country"]["abbrev"] = self.samecodes[_country][
+                            "abbrev"
+                        ]
+                        loc["type"] = self.samecodes[_country][_region]["type"]
+                        loc["region"]["name"] = self.samecodes[_country][
+                            _region
+                        ]["name"]
+                        loc["region"]["abbrev"] = self.samecodes[_country][
+                            _region
+                        ]["abbrev"]
+                        loc["region"]["code"] = self.samecodes[_country][
+                            _region
+                        ]["codes"][_code]
+                        return loc
+            except IndexError:
+                raise InvalidSAME(_fips, "Unknown SAME FIPS code.")
+        except AssertionError:
+            raise InvalidSAME(_fips, "Invalid SAME FIPS code.")
+        except Exception as e:
+            raise InvalidSAME(_fips, f"SAME FIPS code error: {e}.")
 
-        except:
-            pass
+def main():
+    test = db()
+    oof = test.get_loc_from_same("055079")
+    print(oof)
+
+
+if __name__ == "__main__":
+    main()
