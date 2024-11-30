@@ -1,67 +1,93 @@
 # Standard Library
+import re
 from datetime import datetime as DT
-from json import loads
 from time import localtime, timezone
 
 # Local Folder
-from .errors import InvalidSAME, MissingSAME
+from .db import *
+from .errors import *
 
 
 class EAS2Text(object):
 
+    __data__ = db()
+
     def __init__(
         self, sameData: str, timeZone: int = None, mode: str = "NONE"
     ) -> None:
-        sameData = (
-            sameData.strip()
-        )  ## Strip to get rid of leading / trailing newlines and spaces (You're welcome, Don / Kane.)
-        stats = loads(self.__data__)
-        self.FIPS = []
-        self.FIPSText = []
-        self.strFIPS = ""
-        self.EASData = sameData
+        ## All returnable values
+        self.originatorCode = ""
+        self.originatorData = {}
+        self.originatorText = ""
 
-        ## CHECKING FOR VALID SAME
+        self.eventCode = ""
+        self.eventData = {}
+        self.eventText = ""
+        self.eventSeverity = ""
+
+        self.fipsCode = ()
+        self.fipsData = {}
+        self.fipsText = ""
+
+        self.durationCode = ()
+        self.durationText = ""
+
+        self.timestampCode = ()
+        self.timestampText = ""
+
+        self.callsign = ""
+
+        ## Clean up SAME data:
+        sameData = sameData.strip()
+        ## Checking for valid SAME codes:
         if sameData == "":
             raise MissingSAME()
-        elif sameData.startswith("NNNN"):
-            self.EASText = "End Of Message"
-            return
-        elif not sameData.startswith("ZCZC"):
-            raise InvalidSAME(sameData, message='"ZCZC" Start string missing')
-        else:
-            eas = "".join(
-                sameData.replace("ZCZC-", "").replace("+", "-")
-            ).split("-")
-            eas.remove("")
+        self.sameData = sameData
 
-            for i in eas[2:-3]:
+    def process_same(self, country: str = "US"):
+        reg = r"^.*?(NNNN|ZCZC)(?:-([A-Za-z0-9]{3})-([A-Za-z0-9]{3})-((?:-?[0-9]{6})+)\+([0-9]{4})-([0-9]{7})-(.{8})-)?.*?$"
+        prog = re.compile(reg, re.MULTILINE)
+        groups = prog.match(self.sameData).groups()
+        if groups[0] == ("NNNN"):
+            self.EASText = "End Of Message"
+            return "End Of Message"
+        elif groups[0] != ("ZCZC"):
+            raise InvalidSAME(
+                self.sameData, message='"ZCZC" Start string missing'
+            )
+        else:
+            eas = groups[1:]
+
+            tempFips = []
+            for i in eas[2].split("-"):
                 try:
                     assert len(i) == 6
-                    assert self.__isInt__(i) == True
+                    assert i.isnumeric() == True
                     ## FIPS CODE
-                    if i not in self.FIPS:
-                        self.FIPS.append(str(i))
+                    if i not in self.fips:
+                        tempFips.append(i)
                 except AssertionError:
                     raise InvalidSAME("Invalid codes in FIPS data")
+            self.fipsCode = tuple(tempFips)
+            self.fipsData = self.__data__.get_locs_from_fips(self.fips)
 
-            for i in sorted(self.FIPS):
-                try:
-                    subdiv = stats["SUBDIV"][i[0]]
-                    same = stats["SAME"][i[1:]]
-                    self.FIPSText.append(
-                        f"{subdiv + ' ' if subdiv != '' else ''}{same}"
-                    )
-                except KeyError:
-                    self.FIPSText.append(f"FIPS Code {i}")
-                except Exception as E:
-                    raise InvalidSAME(
-                        self.FIPS, message=f"Error in FIPS Code ({str(E)})"
-                    )
-            if len(self.FIPSText) > 1:
-                FIPSText = self.FIPSText
-                FIPSText[-1] = f"and {FIPSText[-1]}"
-            self.strFIPS = "; ".join(self.FIPSText).strip() + ";"
+            # for i in sorted(self.fips):
+            #     try:
+            #         subdiv = stats["SUBDIV"][i[0]]
+            #         same = stats["SAME"][i[1:]]
+            #         self.FIPSText.append(
+            #             f"{subdiv + ' ' if subdiv != '' else ''}{same}"
+            #         )
+            #     except KeyError:
+            #         self.FIPSText.append(f"FIPS Code {i}")
+            #     except Exception as E:
+            #         raise InvalidSAME(
+            #             self.FIPS, message=f"Error in FIPS Code ({str(E)})"
+            #         )
+            # if len(self.FIPSText) > 1:
+            #     FIPSText = self.FIPSText
+            #     FIPSText[-1] = f"and {FIPSText[-1]}"
+            # self.strFIPS = "; ".join(self.FIPSText).strip() + ";"
 
             ## TIME CODE
             try:
@@ -170,9 +196,7 @@ class EAS2Text(object):
                 if self.org == "CIV":
                     self.orgText = "The Civil Authorities"
                 self.strFIPS = self.strFIPS[:-1].replace(";", ",")
-                self.startTimeText = self.startTime.strftime(
-                    "%I:%M %p"
-                ).lower()
+                self.startTimeText = self.startTime.strftime("%I:%M %p").lower()
                 self.endTimeText = self.endTime.strftime("%I:%M %p").lower()
                 if self.startTime.day != self.endTime.day:
                     self.startTimeText += self.startTime.strftime(" %a %b %d")
