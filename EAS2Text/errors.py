@@ -1,4 +1,4 @@
-class InvalidSAME(Exception):
+class InvalidSAMEError(Exception):
     def __init__(self, error, message="Invalid Data in SAME Message"):
         self.message = message
         self.error = error
@@ -8,8 +8,8 @@ class InvalidSAME(Exception):
         return f"{self.message}: {self.error}"
 
 
-class MissingRequiredData(Exception):
-    def __init__(self, error, message="Missing a required data input"):
+class InvalidParameterError(Exception):
+    def __init__(self, error, message="Parameter is not valid input"):
         self.message = message
         self.error = error
         super().__init__(self.message)
@@ -18,7 +18,7 @@ class MissingRequiredData(Exception):
         return f"{self.message}: {self.error}"
 
 
-class MissingSAME(Exception):
+class MissingSAMEError(Exception):
     def __init__(self, message="Missing SAME Message"):
         self.message = message
         super().__init__(self.message)
